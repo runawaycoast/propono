@@ -70,7 +70,6 @@ module Propono
     def parse(raw_sqs_message, queue)
       SqsMessage.new(raw_sqs_message)
     rescue
-      propono_config.logger.error "Error parsing message, moving to corrupt queue", $!, $!.backtrace
       move_to_corrupt_queue(raw_sqs_message)
       aws_client.delete_from_sqs(queue, raw_sqs_message.receipt_handle)
       nil
@@ -79,7 +78,6 @@ module Propono
     def handle(sqs_message)
       process_message(sqs_message)
     rescue => e
-      propono_config.logger.error("Failed to handle message #{e.message} #{e.backtrace}")
       requeue_message_on_failure(sqs_message, e)
     end
 
